@@ -15,6 +15,9 @@ public class GameSettings : MonoBehaviour
     public int refreshRate = 60; // Частота обновления монитора (герцовка)
     public bool fullscreen = true; // Полноэкранный режим
 
+    [Header("Настройки фонарика")]
+    public float flashlightIntensity = 3f; // Яркость света фонарика
+
     [Header("Ссылки")]
     public CameraRotation cameraRotation; // Ссылка на скрипт вращения камеры
 

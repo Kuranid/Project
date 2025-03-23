@@ -3,18 +3,19 @@ using System.Collections.Generic;
 
 public class WeaponSystem : MonoBehaviour
 {
-    [Header("Прицел")]
+    [Header("Настройки прицела")]
     public Texture2D crosshairTexture; // Текстура прицела
     public Vector2 crosshairSize = new Vector2(20, 20); // Размер прицела
     public Color crosshairColor = Color.white; // Цвет прицела
 
-    [Header("Луч")]
+    [Header("Настройки стрельбы")]
+    public bool enableShooting = true; // Включена ли стрельба
     public float raycastRange = 100f; // Дальность луча
     public LayerMask targetLayer; // Слой, на котором будут обнаруживаться объекты
 
     [Header("Эффект")]
     public GameObject blackSpotPrefab; // Префаб чёрного пятна
-    public float spotFadeDuration = 30f; // Время исчезновения пятна (в секундах)
+    public float spotDuration = 30f; // Время существования пятна (в секундах)
     public int maxSpots = 30; // Максимальное количество пятен
 
     private Queue<GameObject> spotsQueue = new Queue<GameObject>(); // Очередь для хранения пятен
@@ -32,16 +33,12 @@ public class WeaponSystem : MonoBehaviour
 
     void Update()
     {
-        // Проверяем, нажата ли левая кнопка мыши
-        if (Input.GetMouseButtonDown(0)) // 0 = ЛКМ
-        {
-            // Проверяем, назначена ли камера
-            if (Camera.main == null)
-            {
-                Debug.LogError("Камера не найдена! Убедись, что на сцене есть камера с тегом MainCamera.");
-                return;
-            }
+        // Если стрельба отключена, выходим из метода
+        if (!enableShooting) return;
 
+        // Проверяем, нажата ли левая кнопка мыши
+        if (Input.GetMouseButtonDown(0)) // ЛКМ
+        {
             // Создаём луч из центра экрана
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
             RaycastHit hit;
@@ -51,14 +48,7 @@ public class WeaponSystem : MonoBehaviour
             {
                 Debug.Log("Обнаружен объект: " + hit.collider.name);
 
-                // Проверяем, назначен ли префаб
-                if (blackSpotPrefab == null)
-                {
-                    Debug.LogError("Префаб чёрного пятна не назначен!");
-                    return;
-                }
-
-                // Если достигнуто максимальное количество пятен, удаляем самое старое
+                // Если на объекте уже есть пятно, удаляем его
                 if (spotsQueue.Count >= maxSpots)
                 {
                     GameObject oldestSpot = spotsQueue.Dequeue(); // Удаляем самое старое пятно из очереди
@@ -76,7 +66,7 @@ public class WeaponSystem : MonoBehaviour
                 spotsQueue.Enqueue(newSpot);
 
                 // Запускаем корутину для удаления пятна через указанное время
-                StartCoroutine(RemoveSpot(newSpot, spotFadeDuration));
+                StartCoroutine(RemoveSpot(newSpot, spotDuration));
             }
         }
     }
